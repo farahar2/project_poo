@@ -33,7 +33,7 @@ $categories = $category->getAll();
     <input type="text" id="name" name="name" required>
     <button type="submit">Ajouter</button>
   </form>
-  <h2>LIste catégories</h2>
+  <h2>Liste catégories</h2>
   <ul>
     <?php foreach($categories as $cat): ?>
       <li><?php echo htmlspecialchars($cat['name']); ?></li>

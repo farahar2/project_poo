@@ -58,4 +58,27 @@ class User
         }
         return false;
     }
+
+    public function countAll(){
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM users");
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return $result['total'] ;
+    }
+
+    public function getTopContributors($limit = 5){
+        $limit = (int)$limit; // S'assurer que c'est un entier
+
+        $sql = "SELECT 
+        users.id, 
+        users.name,
+        users.email,
+         COUNT(prompts.id) AS prompts_count 
+        FROM users 
+        INNER JOIN prompts ON users.id = prompts.user_id 
+        GROUP BY users.id ORDER BY prompts_count DESC LIMIT $limit";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }
