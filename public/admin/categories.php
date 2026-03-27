@@ -1,128 +1,164 @@
 <?php
+$cssPath = "../";
 session_start();
-if(!isset($_SESSION['user_id'])){
-  header("Location: ../login.php");
-  exit();
-}
-if($_SESSION['user_role'] !== 'admin'){
-  die("❌ Accès refusé");
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit;
 }
 
-require_once "../classes/Category.php";
+if ($_SESSION['user_role'] !== 'admin') {
+    die("❌ Accès refusé");
+}
+
+require_once "../../classes/Category.php";
 
 $categoryObj = new Category();
 $message = "";
+$messageType = "";
 
-if(isset($_POST['create'])){
-  $name = trim($_POST['name'] ?? "");
-  if($categoryObj->create($name)){
-    $message = "✅  Catégorie créée !";
-  } else {
-    $message = "❌  Erreur : nom vide ou catégorie existe déjà.";
-  }
-
-  if(isset($_POST['update'])){
-    $id = $_POST['id'] ?? "";
+// CRÉER
+if (isset($_POST['create'])) {
     $name = trim($_POST['name'] ?? "");
-    if($categoryObj->update($id, $name)){
-      $message = "✅  Catégorie modifiée !";
+    if ($categoryObj->create($name)) {
+        $message = "Catégorie créée !";
+        $messageType = "success";
     } else {
-      $message = "❌  Erreur lors de la modification.";
+        $message = "Erreur : nom vide ou catégorie déjà existante.";
+        $messageType = "danger";
     }
-  }
-  
-  if(isset($_POST['delete'])){
-    $id = $_POST['id'] ?? "";
-    if($categoryObj->delete($id)){
-      $message = "✅  Catégorie supprimée !";
-    } else {
-      $message = "❌  Erreur : impossible de supprimer une catégorie liée à des prompts.";
 }
+
+// MODIFIER
+if (isset($_POST['update'])) {
+    $id = $_POST['id'];
+    $name = trim($_POST['name'] ?? "");
+    if ($categoryObj->update($id, $name)) {
+        $message = "Catégorie modifiée !";
+        $messageType = "success";
+    } else {
+        $message = "Erreur lors de la modification.";
+        $messageType = "danger";
+    }
+}
+
+// SUPPRIMER
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    if ($categoryObj->delete($id)) {
+        $message = "Catégorie supprimée !";
+        $messageType = "success";
+    } else {
+        $message = "Erreur : impossible de supprimer.";
+        $messageType = "danger";
+    }
 }
 
 $categories = $categoryObj->getAll();
 $editCategory = null;
 
-if(isset($_GET['edit'])){
-  $editCategory = $categoryObj->findById($_GET['edit']);
-}
+if (isset($_GET['edit'])) {
+    $editCategory = $categoryObj->findById($_GET['edit']);
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestion des Catégories</title>
-   <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
-        .header { background-color: #e74c3c; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        form { background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        input[type="text"] { width: 70%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #2980b9; }
-        table { width: 100%; background-color: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
-        th { background-color: #34495e; color: white; }
-        a { color: #3498db; text-decoration: none; margin-right: 10px; }
-        a:hover { text-decoration: underline; }
-        .delete { color: #e74c3c; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Catégories — Admin</title>
+    <?php include "../../public/includes/head.php"; ?>
 </head>
 <body>
-   <div class="header">
-        <h1>📁 Gestion des Catégories</h1>
+
+<div class="main-container">
+    
+    <!-- HEADER -->
+    <div class="header" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+        <h1><i class="bi bi-gear"></i> Admin — Catégories</h1>
+        <div class="header-links">
+            <a href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="../index.php"><i class="bi bi-house"></i> Accueil</a>
+            <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+        </div>
     </div>
 
-    <a href="dashboard.php">← Retour au Dashboard</a>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1><i class="bi bi-folder"></i> Gestion des Catégories</h1>
+    </div>
 
     <?php if (!empty($message)): ?>
-        <p><strong><?php echo $message; ?></strong></p>
+        <div class="alert alert-<?php echo $messageType; ?>">
+            <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+            <?php echo $message; ?>
+        </div>
     <?php endif; ?>
 
     <!-- FORMULAIRE CRÉER / MODIFIER -->
-    <form method="POST">
-        <?php if ($editCategory): ?>
-            <h2>Modifier la catégorie</h2>
-            <input type="hidden" name="id" value="<?php echo $editCategory['id']; ?>">
-            <input type="text" name="name" value="<?php echo htmlspecialchars($editCategory['name']); ?>" required>
-            <button type="submit" name="update">Enregistrer</button>
-            <a href="categories.php">Annuler</a>
-        <?php else: ?>
-            <h2>Créer une nouvelle catégorie</h2>
-            <input type="text" name="name" placeholder="Nom de la catégorie" required>
-            <button type="submit" name="create">Créer</button>
-        <?php endif; ?>
-    </form>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST">
+                <?php if ($editCategory): ?>
+                    <h5 class="mb-3"><i class="bi bi-pencil"></i> Modifier la catégorie</h5>
+                    <input type="hidden" name="id" value="<?php echo $editCategory['id']; ?>">
+                    <div class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" required
+                               value="<?php echo htmlspecialchars($editCategory['name']); ?>">
+                        <button type="submit" name="update" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Enregistrer
+                        </button>
+                        <a href="categories.php" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                <?php else: ?>
+                    <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Créer une nouvelle catégorie</h5>
+                    <div class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" 
+                               required placeholder="Nom de la catégorie">
+                        <button type="submit" name="create" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Créer
+                        </button>
+                    </div>
+                <?php endif; ?>
+            </form>
+        </div>
+    </div>
 
     <!-- LISTE DES CATÉGORIES -->
-    <h2>Liste des catégories</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Date de création</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($categories as $cat): ?>
+    <div class="table-container">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><?php echo $cat['id']; ?></td>
-                    <td><?php echo htmlspecialchars($cat['name']); ?></td>
-                    <td><?php echo date('d/m/Y', strtotime($cat['created_at'])); ?></td>
-                    <td>
-                        <a href="?edit=<?php echo $cat['id']; ?>">✏️ Modifier</a>
-                        <a href="?delete=<?php echo $cat['id']; ?>" 
-                           class="delete"
-                           onclick="return confirm('Supprimer cette catégorie ?');">
-                            🗑️ Supprimer
-                        </a>
-                    </td>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Date de création</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($categories as $cat): ?>
+                    <tr>
+                        <td><?php echo $cat['id']; ?></td>
+                        <td><strong><?php echo htmlspecialchars($cat['name']); ?></strong></td>
+                        <td><?php echo date('d/m/Y', strtotime($cat['created_at'])); ?></td>
+                        <td>
+                            <a href="?edit=<?php echo $cat['id']; ?>" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+                            <a href="?delete=<?php echo $cat['id']; ?>" 
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Supprimer cette catégorie ?');">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<?php include "../../public/includes/scripts.php"; ?>
 </body>
 </html>

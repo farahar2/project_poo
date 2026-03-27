@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         header("Location: index.php");
         exit;
     } else {
-        $error = "❌ Email ou mot de passe incorrect.";
+        $error = "Email ou mot de passe incorrect.";
     }
 }
 ?>
@@ -23,25 +23,61 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Prompt Manager</title>
+    <?php include "includes/head.php"; ?>
 </head>
 <body>
-    <h1>Connexion</h1>
 
-    <?php if (!empty($error)): ?>
-        <p style="color: red;"><?php echo $error; ?></p>
-    <?php endif; ?>
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="bi bi-braces-asterisk" style="font-size: 3rem;"></i>
+                <h1>Connexion</h1>
+                <p>Accédez à votre bibliothèque de prompts</p>
+            </div>
+            
+            <div class="auth-body">
+                <?php if (!empty($error)): ?>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle"></i> <?php echo $error; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input type="email" name="email" class="form-control" 
+                               required placeholder="ton@email.com">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-lock"></i> Mot de passe
+                        </label>
+                        <input type="password" name="password" class="form-control" 
+                               required placeholder="••••••••">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                    </button>
+                </form>
+                
+                <hr class="my-4">
+                
+                <p class="text-center mb-0">
+                    Pas encore de compte ? 
+                    <a href="register.php" class="text-decoration-none fw-bold">S'inscrire</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <form method="POST">
-        <label>Email :</label><br>
-        <input type="email" name="email" required placeholder="ton@email.com"><br><br>
-
-        <label>Mot de passe :</label><br>
-        <input type="password" name="password" required placeholder="Mot de passe"><br><br>
-
-        <button type="submit">Se connecter</button>
-    </form>
-
-    <p>Pas encore de compte ? <a href="register.php">S'inscrire</a></p>
+<?php include "includes/scripts.php"; ?>
 </body>
 </html>

@@ -44,29 +44,39 @@ Une plateforme de gestion de prompts pour développeurs, permettant de stocker, 
 ## 📂 Structure du projet
 project_poo/
 │
-├── config/
-│ └── Database.php # Connexion PDO centralisée
+├── 📁 config/
+│   └── 📄 Database.php                    # Classe de connexion PDO
 │
-├── classes/
-│ ├── User.php # Gestion des utilisateurs
-│ ├── Category.php # Gestion des catégories
-│ └── Prompt.php # Gestion des prompts
+├── 📁 classes/
+│   ├── 📄 User.php                        # Gestion des utilisateurs
+│   ├── 📄 Category.php                    # Gestion des catégories
+│   └── 📄 Prompt.php                      # Gestion des prompts
 │
-├── public/
-│ ├── index.php # Page d'accueil (liste des prompts)
-│ ├── register.php # Inscription
-│ ├── login.php # Connexion
-│ ├── logout.php # Déconnexion
-│ ├── create_prompt.php # Créer un prompt
-│ ├── edit_prompt.php # Modifier un prompt
-│ ├── delete_prompt.php # Supprimer un prompt
-│ ├── categories.php # Voir toutes les catégories
-│ └── admin/
-│ ├── dashboard.php # Dashboard admin
-│ └── categories.php # Gérer les catégories (admin)
+├── 📁 public/
+│   │
+│   ├── 📁 css/
+│   │   └── 📄 style.css                   # Styles CSS personnalisés
+│   │
+│   ├── 📁 includes/
+│   │   ├── 📄 head.php                    # Liens CSS (Bootstrap + Icons + style.css)
+│   │   └── 📄 scripts.php                 # Liens JS (Bootstrap JS)
+│   │
+│   ├── 📁 admin/
+│   │   ├── 📄 dashboard.php               # Dashboard admin (stats + top contributeurs)
+│   │   └── 📄 categories.php              # Gestion complète des catégories (CRUD)
+│   │
+│   ├── 📄 index.php                       # Page d'accueil (liste + filtres des prompts)
+│   ├── 📄 login.php                       # Page de connexion
+│   ├── 📄 register.php                    # Page d'inscription
+│   ├── 📄 logout.php                      # Déconnexion (destruction session)
+│   ├── 📄 create_prompt.php               # Créer un nouveau prompt
+│   ├── 📄 edit_prompt.php                 # Modifier un prompt existant
+│   ├── 📄 delete_prompt.php               # Supprimer un prompt
+│   └── 📄 categories.php                  # Liste des catégories (utilisateurs)
 │
-├── database.sql # Script de création de la base
-└── README.md # Ce fichier
+├── 📄 database.sql                        # Script de création BDD + seeding
+├── 📄 README.md                           # Documentation du projet
+└── 📄 .gitignore                          # (optionnel) Fichiers à ignorer par Git
 
 ## 🗄️ Schéma de la Base de Données
 

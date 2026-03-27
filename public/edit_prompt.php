@@ -1,30 +1,51 @@
 <?php
 $cssPath = "";
 session_start();
-if(!isset($_SESSION['user_id'])){
-  header("Location: login.php");
-  exit();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
 }
+
 require_once "../classes/Prompt.php";
 require_once "../classes/Category.php";
 
-$prompt = new Prompt();
-$category = new Category();
+$promptObj = new Prompt();
+$categoryObj = new Category();
+
+$id = $_GET['id'] ?? null;
+
+if (!$id) {
+    die("❌ ID manquant");
+}
+
+$prompt = $promptObj->findById($id);
+
+if (!$prompt) {
+    die("❌ Prompt introuvable");
+}
+
+if ($prompt['user_id'] != $_SESSION['user_id']) {
+    die("❌ Accès refusé : ce n'est pas ton prompt !");
+}
+
+$categories = $categoryObj->getAll();
 $message = "";
+$messageType = "";
 
-$categories = $category->getAll();
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $title      = trim($_POST["title"] ?? "");
+    $content    = trim($_POST["content"] ?? "");
+    $categoryId = $_POST["category_id"] ?? "";
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
-  $title = trim($_POST['title']);
-  $content = trim($_POST['content']);
-  $categoryId = $_POST['category_id'];
-  $userId = $_SESSION['user_id'];
-
-  if($prompt->create($title, $content, $userId, $categoryId)){
-    $message = "✅  Prompt créé !";
-  } else {
-    $message = "❌  Erreur : titre ou contenu vide.";
-  }
+    if ($promptObj->update($id, $title, $content, $categoryId)) {
+        $message = "Prompt modifié avec succès !";
+        $messageType = "success";
+        $prompt = $promptObj->findById($id);
+    } else {
+        $message = "Erreur lors de la modification.";
+        $messageType = "danger";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -32,7 +53,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créer un Prompt — Prompt Manager</title>
+    <title>Modifier le Prompt — Prompt Manager</title>
     <?php include "includes/head.php"; ?>
 </head>
 <body>
@@ -52,31 +73,28 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="form-container">
-                <h1><i class="bi bi-plus-circle"></i> Créer un nouveau Prompt</h1>
+                <h1><i class="bi bi-pencil"></i> Modifier le Prompt</h1>
                 
                 <?php if (!empty($message)): ?>
                     <div class="alert alert-<?php echo $messageType; ?>">
                         <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
                         <?php echo $message; ?>
-                        <?php if ($messageType === 'success'): ?>
-                            — <a href="index.php" class="alert-link">Voir tous les prompts</a>
-                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 
                 <form method="POST">
                     <div class="mb-3">
                         <label class="form-label">Titre du prompt</label>
-                        <input type="text" name="title" class="form-control" 
-                               required placeholder="Ex: Générer une API REST en PHP">
+                        <input type="text" name="title" class="form-control" required 
+                               value="<?php echo htmlspecialchars($prompt['title']); ?>">
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Catégorie</label>
                         <select name="category_id" class="form-select" required>
-                            <option value="">-- Choisir une catégorie --</option>
                             <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo $cat['id']; ?>">
+                                <option value="<?php echo $cat['id']; ?>"
+                                    <?php echo ($cat['id'] == $prompt['category_id']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($cat['name']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -85,16 +103,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     
                     <div class="mb-4">
                         <label class="form-label">Contenu du prompt</label>
-                        <textarea name="content" class="form-control" rows="8" required 
-                                  placeholder="Écris ton prompt ici..."></textarea>
-                        <small class="text-muted">
-                            Sois précis et détaillé pour de meilleurs résultats avec les LLM.
-                        </small>
+                        <textarea name="content" class="form-control" rows="8" required><?php echo htmlspecialchars($prompt['content']); ?></textarea>
                     </div>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Enregistrer
+                            <i class="bi bi-save"></i> Enregistrer les modifications
                         </button>
                         <a href="index.php" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-left"></i> Retour
