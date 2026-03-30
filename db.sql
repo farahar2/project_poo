@@ -9,7 +9,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
 
     password VARCHAR(255) NOT NULL,
-    role ENUM('developer', 'admin') DEFAULT 'user',
+    role ENUM('developer', 'admin') DEFAULT 'developer',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

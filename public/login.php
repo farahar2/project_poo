@@ -1,5 +1,11 @@
 <?php
+session_start();
 require_once "../classes/User.php";
+
+if (isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit;
+}
 
 $error = "";
 
@@ -33,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <i class="bi bi-braces-asterisk" style="font-size: 3rem;"></i>
+                
                 <h1>Connexion</h1>
                 <p>Accédez à votre bibliothèque de prompts</p>
             </div>
@@ -41,17 +47,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <div class="auth-body">
                 <?php if (!empty($error)): ?>
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-circle"></i> <?php echo $error; ?>
+                        <i class="bi bi-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?>
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST">
+                <form method="POST" action="">
                     <div class="mb-3">
                         <label class="form-label">
                             <i class="bi bi-envelope"></i> Email
                         </label>
                         <input type="email" name="email" class="form-control" 
-                               required placeholder="ton@email.com">
+                               required placeholder="ton@email.com"
+                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
                     </div>
                     
                     <div class="mb-4">

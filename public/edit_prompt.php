@@ -13,7 +13,7 @@ require_once "../classes/Category.php";
 $promptObj = new Prompt();
 $categoryObj = new Category();
 
-$id = $_GET['id'] ?? null;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if (!$id) {
     die("❌ ID manquant");
@@ -31,20 +31,17 @@ if ($prompt['user_id'] != $_SESSION['user_id']) {
 
 $categories = $categoryObj->getAll();
 $message = "";
-$messageType = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $title      = trim($_POST["title"] ?? "");
     $content    = trim($_POST["content"] ?? "");
-    $categoryId = $_POST["category_id"] ?? "";
+    $categoryId = (int)($_POST["category_id"] ?? 0);
 
     if ($promptObj->update($id, $title, $content, $categoryId)) {
         $message = "Prompt modifié avec succès !";
-        $messageType = "success";
         $prompt = $promptObj->findById($id);
     } else {
         $message = "Erreur lors de la modification.";
-        $messageType = "danger";
     }
 }
 ?>
@@ -62,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
     <!-- HEADER -->
     <div class="header">
-        <h1><i class="bi bi-braces-asterisk"></i> Prompt Manager</h1>
+        <h1>Prompt Manager</h1>
         <div class="header-links">
             <a href="index.php"><i class="bi bi-house"></i> Accueil</a>
             <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
@@ -76,9 +73,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <h1><i class="bi bi-pencil"></i> Modifier le Prompt</h1>
                 
                 <?php if (!empty($message)): ?>
-                    <div class="alert alert-<?php echo $messageType; ?>">
-                        <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
-                        <?php echo $message; ?>
+                    <?php $isError = stripos($message, 'erreur') !== false; ?>
+                    <div class="alert alert-<?php echo $isError ? 'danger' : 'success'; ?>">
+                        <i class="bi bi-<?php echo $isError ? 'exclamation-circle' : 'check-circle'; ?>"></i>
+                        <?php echo htmlspecialchars($message); ?>
                     </div>
                 <?php endif; ?>
                 

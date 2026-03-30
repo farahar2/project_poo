@@ -12,9 +12,12 @@ $prompt = new Prompt();
 $category = new Category();
 
 $categories = $category->getAll();
-$categoryId = $_GET['category_id'] ?? null;
+$categoryId = isset($_GET['category_id']) ? (int)$_GET['category_id'] : null;
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-if($categoryId){
+if ($search !== '') {
+    $prompts = $prompt->search($search, $categoryId);
+} elseif($categoryId){
     $prompts = $prompt->getByCategory($categoryId);
 } else {
     $prompts = $prompt->getAll();
@@ -35,7 +38,7 @@ if($categoryId){
     
     <!-- HEADER -->
     <div class="header">
-        <h1><i class="bi bi-braces-asterisk"></i> Prompt Manager</h1>
+        <h1>Prompt Manager</h1>
         <div class="header-links">
             <span class="user-info">
                 <i class="bi bi-person-circle"></i> 
@@ -63,20 +66,34 @@ if($categoryId){
         </a>
     </div>
 
-    <!-- FILTRES -->
-    <div class="filters">
-        <div class="filters-title"><i class="bi bi-funnel"></i> Filtrer par catégorie :</div>
-        <div>
-            <a href="index.php" class="filter-btn <?php echo !$categoryId ? 'active' : ''; ?>">
-                Tous
-            </a>
-            <?php foreach ($categories as $cat): ?>
-                <a href="index.php?category_id=<?php echo $cat['id']; ?>" 
-                   class="filter-btn <?php echo ($categoryId == $cat['id']) ? 'active' : ''; ?>">
-                    <?php echo htmlspecialchars($cat['name']); ?>
+    <!-- FILTRES ET RECHERCHE -->
+    <div class="filters d-flex justify-content-between align-items-center" style="gap: 20px;">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="filters-title"><i class="bi bi-funnel"></i> Filtrer :</div>
+            <div>
+                <a href="index.php<?php echo !empty($search) ? '?search=' . urlencode($search) : ''; ?>" class="filter-btn <?php echo !$categoryId ? 'active' : ''; ?>">
+                    Tous
                 </a>
-            <?php endforeach; ?>
+                <?php foreach ($categories as $cat): ?>
+                    <a href="index.php?category_id=<?php echo $cat['id']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+                       class="filter-btn <?php echo ($categoryId == $cat['id']) ? 'active' : ''; ?>">
+                        <?php echo htmlspecialchars($cat['name']); ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
+
+        <form action="index.php" method="GET" class="d-flex gap-2" style="max-width: 300px; flex: 1; margin: 0;">
+            <?php if ($categoryId): ?>
+                <input type="hidden" name="category_id" value="<?php echo $categoryId; ?>">
+            <?php endif; ?>
+            <input type="text" name="search" class="form-control mb-0" 
+                   placeholder="Rechercher un prompt..." 
+                   value="<?php echo htmlspecialchars($search); ?>" style="padding: 7px 14px; font-size: 0.8125rem;">
+            <button class="btn btn-primary" type="submit" style="padding: 7px 14px;">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
     </div>
 
     <!-- LISTE DES PROMPTS -->
@@ -90,41 +107,46 @@ if($categoryId){
             </a>
         </div>
     <?php else: ?>
+        <div class="prompts-grid">
         <?php foreach ($prompts as $p): ?>
             <div class="card prompt-card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">
-                            <?php echo htmlspecialchars($p['title']); ?>
-                        </h5>
+                    <div class="prompt-card-header">
                         <span class="badge-category">
                             <?php echo htmlspecialchars($p['category_name']); ?>
                         </span>
                     </div>
                     
-                    <div class="meta">
-                        <i class="bi bi-person"></i> <?php echo htmlspecialchars($p['author_name']); ?>
-                        &nbsp;•&nbsp;
-                        <i class="bi bi-calendar"></i> <?php echo date('d/m/Y à H:i', strtotime($p['created_at'])); ?>
-                    </div>
+                    <h5 class="card-title">
+                        <?php echo htmlspecialchars($p['title']); ?>
+                    </h5>
                     
                     <div class="content"><?php echo htmlspecialchars($p['content']); ?></div>
                     
-                    <?php if ($p['user_id'] == $_SESSION['user_id']): ?>
-                        <div class="actions">
-                            <a href="edit_prompt.php?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i> Modifier
-                            </a>
-                            <a href="delete_prompt.php?id=<?php echo $p['id']; ?>" 
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Supprimer ce prompt ?');">
-                                <i class="bi bi-trash"></i> Supprimer
-                            </a>
+                    <div class="prompt-card-footer">
+                        <div class="meta">
+                            <i class="bi bi-person"></i> <?php echo htmlspecialchars($p['author_name']); ?>
+                            &nbsp;•&nbsp;
+                            <i class="bi bi-calendar"></i> <?php echo date('d/m/Y', strtotime($p['created_at'])); ?>
                         </div>
-                    <?php endif; ?>
+                        
+                        <?php if ($p['user_id'] == $_SESSION['user_id']): ?>
+                            <div class="actions">
+                                <a href="edit_prompt.php?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="delete_prompt.php?id=<?php echo $p['id']; ?>" 
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Supprimer ce prompt ?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 
 </div>

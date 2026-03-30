@@ -15,42 +15,42 @@ require_once "../../classes/Category.php";
 
 $categoryObj = new Category();
 $message = "";
-$messageType = "";
+
 
 // CRÉER
 if (isset($_POST['create'])) {
     $name = trim($_POST['name'] ?? "");
     if ($categoryObj->create($name)) {
         $message = "Catégorie créée !";
-        $messageType = "success";
+    
     } else {
         $message = "Erreur : nom vide ou catégorie déjà existante.";
-        $messageType = "danger";
+
     }
 }
 
 // MODIFIER
 if (isset($_POST['update'])) {
-    $id = $_POST['id'];
+    $id = (int)($_POST['id'] ?? 0);
     $name = trim($_POST['name'] ?? "");
     if ($categoryObj->update($id, $name)) {
         $message = "Catégorie modifiée !";
-        $messageType = "success";
+   
     } else {
         $message = "Erreur lors de la modification.";
-        $messageType = "danger";
+  
     }
 }
 
 // SUPPRIMER
 if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+    $id = (int)$_GET['delete'];
     if ($categoryObj->delete($id)) {
         $message = "Catégorie supprimée !";
-        $messageType = "success";
+    
     } else {
         $message = "Erreur : impossible de supprimer.";
-        $messageType = "danger";
+        
     }
 }
 
@@ -58,7 +58,7 @@ $categories = $categoryObj->getAll();
 $editCategory = null;
 
 if (isset($_GET['edit'])) {
-    $editCategory = $categoryObj->findById($_GET['edit']);
+    $editCategory = $categoryObj->findById((int)$_GET['edit']);
 }
 ?>
 <!DOCTYPE html>
@@ -89,9 +89,10 @@ if (isset($_GET['edit'])) {
     </div>
 
     <?php if (!empty($message)): ?>
-        <div class="alert alert-<?php echo $messageType; ?>">
-            <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
-            <?php echo $message; ?>
+        <?php $isError = stripos($message, 'erreur') !== false; ?>
+        <div class="alert alert-<?php echo $isError ? 'danger' : 'success'; ?>">
+            <i class="bi bi-<?php echo $isError ? 'exclamation-circle' : 'check-circle'; ?>"></i>
+            <?php echo htmlspecialchars($message); ?>
         </div>
     <?php endif; ?>
 

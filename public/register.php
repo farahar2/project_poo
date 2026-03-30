@@ -1,8 +1,14 @@
 <?php
+session_start();
 require_once "../classes/User.php";
 
+if (isset($_SESSION['user_id'])) {
+    header("Location: index.php");
+    exit;
+}
+
 $message = "";
-$messageType = "";
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name     = $_POST["name"] ?? "";
     $email    = $_POST["email"] ?? "";
@@ -13,11 +19,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($success) {
         $message = "Inscription réussie ! Tu peux maintenant te connecter.";
-        $messageType = "success";
-
     } else {
         $message = "Échec : champ vide, email invalide, ou déjà utilisé.";
-        $messageType = "danger";
     }
 }
 ?>
@@ -43,19 +46,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             
             <div class="auth-body">
                 <?php if (!empty($message)): ?>
-                    <div class="alert alert-<?php echo $messageType; ?>">
-                        <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
-                        <?php echo $message; ?>
+                    <?php $isError = stripos($message, 'échec') !== false || stripos($message, 'erreur') !== false; ?>
+                    <div class="alert alert-<?php echo $isError ? 'danger' : 'success'; ?>">
+                        <i class="bi bi-<?php echo $isError ? 'exclamation-circle' : 'check-circle'; ?>"></i>
+                        <?php echo htmlspecialchars($message); ?>
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST">
+                <form method="POST" action="">
                     <div class="mb-3">
                         <label class="form-label">
                             <i class="bi bi-person"></i> Nom complet
                         </label>
                         <input type="text" name="name" class="form-control" 
-                               required placeholder="John Doe">
+                               required placeholder="John Doe"
+                               value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>">
                     </div>
                     
                     <div class="mb-3">
@@ -63,7 +68,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <i class="bi bi-envelope"></i> Email
                         </label>
                         <input type="email" name="email" class="form-control" 
-                               required placeholder="ton@email.com">
+                               required placeholder="ton@email.com"
+                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
                     </div>
                     
                     <div class="mb-4">

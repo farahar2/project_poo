@@ -21,9 +21,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
   $userId = $_SESSION['user_id'];
 
   if($prompt->create($title, $content, $userId, $categoryId)){
-    $message = "✅  Prompt créé !";
+    $message = "Prompt créé avec succès !";
   } else {
-    $message = "❌  Erreur : titre ou contenu vide.";
+    $message = "Erreur : titre ou contenu vide.";
   }
 }
 ?>
@@ -41,7 +41,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     
     <!-- HEADER -->
     <div class="header">
-        <h1><i class="bi bi-braces-asterisk"></i> Prompt Manager</h1>
+        <h1>Prompt Manager</h1>
         <div class="header-links">
             <a href="index.php"><i class="bi bi-house"></i> Accueil</a>
             <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
@@ -55,10 +55,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 <h1><i class="bi bi-plus-circle"></i> Créer un nouveau Prompt</h1>
                 
                 <?php if (!empty($message)): ?>
-                    <div class="alert alert-<?php echo $messageType; ?>">
-                        <i class="bi bi-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+                    <?php $isError = stripos($message, 'erreur') !== false; ?>
+                    <div class="alert alert-<?php echo $isError ? 'danger' : 'success'; ?>">
+                        <i class="bi bi-<?php echo $isError ? 'exclamation-circle' : 'check-circle'; ?>"></i>
                         <?php echo $message; ?>
-                        <?php if ($messageType === 'success'): ?>
+                        <?php if (!$isError): ?>
                             — <a href="index.php" class="alert-link">Voir tous les prompts</a>
                         <?php endif; ?>
                     </div>
